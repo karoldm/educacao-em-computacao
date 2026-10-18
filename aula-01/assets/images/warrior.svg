@@ -1,0 +1,43 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgWar" cx="50%" cy="38%" r="68%">
+      <stop offset="0%" stop-color="#5f3030"/>
+      <stop offset="100%" stop-color="#281616"/>
+    </radialGradient>
+    <linearGradient id="armorWar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c3c3cc"/>
+      <stop offset="100%" stop-color="#82828e"/>
+    </linearGradient>
+    <linearGradient id="bladeWar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eef0f6"/>
+      <stop offset="100%" stop-color="#b5b8c4"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="100" cy="100" r="94" fill="url(#bgWar)" stroke="#d8a53d" stroke-width="3"/>
+
+  <path d="M60 178 C56 128 72 106 100 106 C128 106 144 128 140 178 Z" fill="url(#armorWar)" stroke="#4c4c54" stroke-width="2.5"/>
+  <path d="M88 118 L112 118 L116 178 L84 178 Z" fill="#5b5b64" opacity="0.4"/>
+  <path d="M60 178 C58 150 62 128 74 114 L82 122 C72 136 68 156 70 178 Z" fill="#6b6b74"/>
+  <path d="M140 178 C142 150 138 128 126 114 L118 122 C128 136 132 156 130 178 Z" fill="#6b6b74"/>
+
+  <circle cx="47" cy="112" r="15" fill="#9a9aa2" stroke="#4c4c54" stroke-width="2"/>
+  <circle cx="153" cy="112" r="15" fill="#9a9aa2" stroke="#4c4c54" stroke-width="2"/>
+
+  <circle cx="100" cy="72" r="24" fill="#e7cd9a"/>
+  <path d="M74 68 C74 44 90 34 100 34 C110 34 126 44 126 68 L118 68 C118 52 110 44 100 44 C90 44 82 52 82 68 Z" fill="#9a9aa2" stroke="#4c4c54" stroke-width="2"/>
+  <rect x="96" y="60" width="8" height="18" fill="#4c4c54"/>
+  <circle cx="90" cy="72" r="2.6" fill="#241616"/>
+  <circle cx="110" cy="72" r="2.6" fill="#241616"/>
+
+  <g transform="rotate(-18 60 90)">
+    <rect x="54" y="30" width="14" height="70" rx="3" fill="url(#bladeWar)" stroke="#8b8fa0" stroke-width="1.5"/>
+    <rect x="48" y="98" width="26" height="8" rx="2" fill="#b98d3d"/>
+    <rect x="56" y="104" width="10" height="22" rx="2" fill="#5c4a30"/>
+  </g>
+
+  <g transform="rotate(18 150 110)">
+    <path d="M136 88 a20 26 0 0 1 40 0 L176 128 a20 24 0 0 1 -40 0 Z" fill="#8a3a2a" stroke="#5c2418" stroke-width="2.5"/>
+    <circle cx="156" cy="106" r="6" fill="#d8a53d"/>
+  </g>
+</svg>

@@ -1,0 +1,22 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgRust" cx="50%" cy="38%" r="68%">
+      <stop offset="0%" stop-color="#3c3a2c"/>
+      <stop offset="100%" stop-color="#181712"/>
+    </radialGradient>
+    <linearGradient id="metalRust" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a8724a"/>
+      <stop offset="100%" stop-color="#6b4a30"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="94" fill="url(#bgRust)" stroke="#7fbf6a" stroke-width="3"/>
+  <rect x="70" y="98" width="60" height="62" rx="6" fill="url(#metalRust)" stroke="#3c2a1c" stroke-width="3"/>
+  <rect x="80" y="56" width="40" height="40" rx="6" fill="url(#metalRust)" stroke="#3c2a1c" stroke-width="3"/>
+  <rect x="88" y="70" width="9" height="9" fill="#7fbf6a"/>
+  <rect x="103" y="70" width="9" height="9" fill="#7fbf6a"/>
+  <path d="M66 120 C56 130 58 146 72 150" fill="none" stroke="#4c6b3e" stroke-width="6" stroke-linecap="round"/>
+  <path d="M134 112 C146 118 148 136 132 144" fill="none" stroke="#4c6b3e" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="70" cy="150" r="5" fill="#7fbf6a"/>
+  <circle cx="132" cy="144" r="5" fill="#7fbf6a"/>
+  <rect x="90" y="122" width="20" height="8" fill="#3c2a1c"/>
+</svg>

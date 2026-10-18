@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Linhagem de Heróis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Spectral:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <main id="game-root">
+      <section id="screen-intro" class="screen">
+        <div class="intro-panel">
+          <h1>Linhagem de Heróis</h1>
+          <p class="intro-subtitle">
+            Uma história de classes, subclasses e do poder herdado entre elas.
+          </p>
+          <button id="btn-start" class="btn btn-primary">
+            Iniciar a Jornada
+          </button>
+        </div>
+      </section>
+
+      <section id="screen-dialogue" class="screen hidden">
+        <div class="dialogue-panel">
+          <div class="dialogue-portrait">
+            <img
+              id="dialogue-portrait-img"
+              src="assets/images/narrator.svg"
+              alt="Retrato do Velho Arquivista"
+            />
+          </div>
+          <div class="dialogue-body">
+            <p id="dialogue-speaker" class="dialogue-speaker"></p>
+            <p id="dialogue-text" class="dialogue-text"></p>
+            <button id="btn-dialogue-next" class="btn btn-primary">
+              Continuar
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-enemy" class="screen hidden">
+        <div class="enemy-reveal-panel">
+          <h2>Um Inimigo Aparece</h2>
+          <img
+            id="enemy-reveal-img"
+            class="enemy-reveal-portrait"
+            alt="Inimigo"
+          />
+          <h3 id="enemy-reveal-name"></h3>
+          <p id="enemy-reveal-title" class="enemy-reveal-title"></p>
+          <div class="weakness-box">
+            <p class="weakness-label">Só cai para:</p>
+            <p id="enemy-reveal-weakness" class="weakness-value"></p>
+          </div>
+          <button id="btn-enemy-continue" class="btn btn-primary">
+            Treinar
+          </button>
+        </div>
+      </section>
+
+      <section id="screen-builder" class="screen hidden">
+        <div class="builder-panel">
+          <h2>Hora de Treinar</h2>
+          <p class="builder-hint">
+            Sua linhagem atual, da classe base até sua última especialização.
+          </p>
+          <div id="lineage-cards" class="lineage-cards"></div>
+          <p class="builder-hint" id="builder-prompt">
+            Treine mais dessa vez: você vai precisar se especializar e aprender
+            uma habilidade nova para derrotar esse inimigo.
+          </p>
+          <div id="option-cards" class="option-cards"></div>
+          <button id="btn-confirm-class" class="btn btn-primary hidden">
+            Enfrentar o Inimigo
+          </button>
+        </div>
+      </section>
+
+      <section id="screen-battle" class="screen hidden">
+        <div class="battle-panel">
+          <div class="battle-side">
+            <h3 id="battle-character-name" class="battle-name"></h3>
+            <img
+              id="battle-character-img"
+              class="battle-portrait"
+              alt="Seu personagem"
+            />
+            <p id="battle-character-attack" class="battle-attack-label"></p>
+          </div>
+          <div class="battle-versus">VS</div>
+          <div class="battle-side">
+            <h3 id="battle-enemy-name" class="battle-name"></h3>
+            <button
+              id="battle-enemy-btn"
+              class="enemy-button"
+              aria-label="Atacar o inimigo"
+            >
+              <img
+                id="battle-enemy-img"
+                class="battle-portrait"
+                alt="Inimigo"
+              />
+            </button>
+            <p class="battle-hint">Clique no inimigo para atacar</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-hierarchy" class="screen hidden">
+        <div class="hierarchy-panel">
+          <h2>Pai ou Filha?</h2>
+          <p class="builder-hint">
+            Responda sobre a hierarquia completa de classes. A cada acerto, mais
+            um nível da árvore aparece abaixo — o caminho que você percorreu
+            fica destacado em dourado.
+          </p>
+
+          <div id="hierarchy-built" class="hierarchy-tree"></div>
+
+          <p id="hierarchy-question-text" class="hierarchy-question-text"></p>
+          <div id="hierarchy-options" class="hierarchy-options"></div>
+          <p id="hierarchy-feedback" class="hierarchy-feedback"></p>
+
+          <button id="btn-hierarchy-continue" class="btn btn-primary hidden">
+            Continuar
+          </button>
+        </div>
+      </section>
+
+      <section id="screen-result" class="screen hidden">
+        <div class="result-panel">
+          <h2 id="result-title"></h2>
+          <p id="result-text"></p>
+          <a
+            id="result-link"
+            class="btn btn-primary"
+            href="#"
+            target="_blank"
+          ></a>
+          <button id="btn-result-continue" class="btn btn-primary"></button>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/namespace.js"></script>
+    <script src="js/data/attackCatalog.js"></script>
+    <script src="js/classes/Adventurer.js"></script>
+    <script src="js/classes/Mage.js"></script>
+    <script src="js/classes/Warrior.js"></script>
+    <script src="js/classes/Cleric.js"></script>
+    <script src="js/classes/Pyromancer.js"></script>
+    <script src="js/classes/FrostMage.js"></script>
+    <script src="js/classes/Berserker.js"></script>
+    <script src="js/classes/Knight.js"></script>
+    <script src="js/classes/Priest.js"></script>
+    <script src="js/classes/Druid.js"></script>
+    <script src="js/classes/ClassRegistry.js"></script>
+    <script src="js/Enemy.js"></script>
+    <script src="js/GameState.js"></script>
+    <script src="js/data/enemies.js"></script>
+    <script src="js/EnemySelector.js"></script>
+    <script src="js/data/dialogues.js"></script>
+    <script src="js/data/reward.js"></script>
+    <script src="js/ui/ScreenManager.js"></script>
+    <script src="js/ui/CardRenderer.js"></script>
+    <script src="js/ui/DialogueBox.js"></script>
+    <script src="js/ui/EnemyReveal.js"></script>
+    <script src="js/ui/CharacterBuilder.js"></script>
+    <script src="js/ui/HierarchyQuiz.js"></script>
+    <script src="js/ui/BattleScreen.js"></script>
+    <script src="js/ui/ResultScreen.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgWyrm" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#4a3630"/>
+      <stop offset="100%" stop-color="#1c1512"/>
+    </radialGradient>
+  </defs>
+  <circle cx="100" cy="100" r="94" fill="url(#bgWyrm)" stroke="#8a7060" stroke-width="3"/>
+  <path d="M54 130 C54 96 76 72 100 72 C124 72 146 96 146 130 C146 152 128 164 100 164 C72 164 54 152 54 130 Z" fill="#6b5850" stroke="#3c322c" stroke-width="3"/>
+  <path d="M70 92 L58 68 L78 78 Z" fill="#8a7060"/>
+  <path d="M130 92 L142 68 L122 78 Z" fill="#8a7060"/>
+  <circle cx="84" cy="110" r="7" fill="#e4703a"/>
+  <circle cx="116" cy="110" r="7" fill="#e4703a"/>
+  <path d="M78 138 Q100 150 122 138 L118 150 Q100 158 82 150 Z" fill="#3c322c"/>
+</svg>

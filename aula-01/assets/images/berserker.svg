@@ -1,0 +1,45 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgBerz" cx="50%" cy="38%" r="68%">
+      <stop offset="0%" stop-color="#732b26"/>
+      <stop offset="100%" stop-color="#2a0f0d"/>
+    </radialGradient>
+    <linearGradient id="skinBerz" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dba876"/>
+      <stop offset="100%" stop-color="#b07f50"/>
+    </linearGradient>
+    <linearGradient id="axeBerz" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e6e8f0"/>
+      <stop offset="100%" stop-color="#a9acb8"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="100" cy="100" r="94" fill="url(#bgBerz)" stroke="#e4703a" stroke-width="3"/>
+
+  <path d="M64 180 C60 140 70 116 100 116 C130 116 140 140 136 180 Z" fill="url(#skinBerz)" stroke="#7a5230" stroke-width="2.5"/>
+  <path d="M78 134 Q100 148 122 134" fill="none" stroke="#8a5a34" stroke-width="3" opacity="0.6"/>
+  <path d="M70 122 L84 142" stroke="#c94f34" stroke-width="5" stroke-linecap="round"/>
+  <path d="M130 122 L116 142" stroke="#c94f34" stroke-width="5" stroke-linecap="round"/>
+
+  <path d="M60 128 C48 118 46 128 52 138 C44 132 40 144 50 150 L72 138 Z" fill="#7a5230"/>
+  <path d="M140 128 C152 118 154 128 148 138 C156 132 160 144 150 150 L128 138 Z" fill="#7a5230"/>
+
+  <circle cx="100" cy="76" r="25" fill="#e7cd9a"/>
+  <path d="M72 66 Q76 36 100 32 Q124 36 128 66 Q120 44 100 42 Q80 44 72 66 Z" fill="#5a3d24"/>
+  <path d="M64 58 Q60 40 74 28" fill="none" stroke="#5a3d24" stroke-width="6" stroke-linecap="round"/>
+  <path d="M136 58 Q140 40 126 28" fill="none" stroke="#5a3d24" stroke-width="6" stroke-linecap="round"/>
+  <path d="M84 88 Q100 94 116 88" fill="none" stroke="#8a3a2a" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="90" cy="74" r="2.8" fill="#2a0f0d"/>
+  <circle cx="110" cy="74" r="2.8" fill="#2a0f0d"/>
+  <path d="M80 64 L92 68" stroke="#3a2515" stroke-width="3" stroke-linecap="round"/>
+  <path d="M120 64 L108 68" stroke="#3a2515" stroke-width="3" stroke-linecap="round"/>
+
+  <g transform="rotate(-32 46 110)">
+    <rect x="41" y="60" width="8" height="66" rx="2" fill="#6b4a2a"/>
+    <path d="M28 46 L58 46 L62 70 L46 78 L30 70 Z" fill="url(#axeBerz)" stroke="#7c7f8c" stroke-width="2"/>
+  </g>
+  <g transform="rotate(32 154 110)">
+    <rect x="151" y="60" width="8" height="66" rx="2" fill="#6b4a2a"/>
+    <path d="M142 46 L172 46 L170 70 L154 78 L138 70 Z" fill="url(#axeBerz)" stroke="#7c7f8c" stroke-width="2"/>
+  </g>
+</svg>

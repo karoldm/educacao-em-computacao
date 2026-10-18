@@ -1,0 +1,20 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgGolem" cx="50%" cy="38%" r="68%">
+      <stop offset="0%" stop-color="#3d3d4a"/>
+      <stop offset="100%" stop-color="#18181f"/>
+    </radialGradient>
+    <linearGradient id="metalGolem" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9a9aa4"/>
+      <stop offset="100%" stop-color="#5c5c66"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="94" fill="url(#bgGolem)" stroke="#b98d3d" stroke-width="3"/>
+  <rect x="66" y="100" width="68" height="66" rx="6" fill="url(#metalGolem)" stroke="#3c3c44" stroke-width="3"/>
+  <rect x="52" y="108" width="20" height="42" rx="4" fill="#7c7c86" stroke="#3c3c44" stroke-width="2"/>
+  <rect x="128" y="108" width="20" height="42" rx="4" fill="#7c7c86" stroke="#3c3c44" stroke-width="2"/>
+  <rect x="76" y="56" width="48" height="46" rx="6" fill="url(#metalGolem)" stroke="#3c3c44" stroke-width="3"/>
+  <rect x="86" y="72" width="10" height="10" fill="#e4703a"/>
+  <rect x="104" y="72" width="10" height="10" fill="#e4703a"/>
+  <circle cx="100" cy="128" r="10" fill="#e4703a" opacity="0.85"/>
+</svg>

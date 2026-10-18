@@ -1,0 +1,15 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgDruid" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#2c4a2e"/>
+      <stop offset="100%" stop-color="#132018"/>
+    </radialGradient>
+  </defs>
+  <circle cx="100" cy="100" r="94" fill="url(#bgDruid)" stroke="#7fbf6a" stroke-width="3"/>
+  <circle cx="100" cy="70" r="24" fill="#e7cd9a"/>
+  <path d="M64 168 C64 124 82 110 100 110 C118 110 136 124 136 168 Z" fill="#4c6b3e"/>
+  <path d="M64 168 C64 124 82 110 100 110 C118 110 136 124 136 168 Z" fill="none" stroke="#2f4527" stroke-width="3"/>
+  <path d="M100 44 C88 52 88 66 100 74 C112 66 112 52 100 44 Z" fill="#7fbf6a"/>
+  <path d="M84 50 C76 60 78 72 88 76 C86 66 84 58 84 50 Z" fill="#6aa856"/>
+  <path d="M116 50 C124 60 122 72 112 76 C114 66 116 58 116 50 Z" fill="#6aa856"/>
+</svg>

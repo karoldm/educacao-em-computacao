@@ -1,0 +1,33 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin — Laboratório de Filtros</title>
+<link rel="stylesheet" href="/style.css">
+<main style="max-width:1100px"><h1>Painel do professor</h1>
+<div class="card" id="login"><label>Chave de admin <input id="k" type="password" autocomplete="off"></label> <button class="p" onclick="enter()">Entrar</button> <span id="msg" role="status"></span></div>
+<div id="panel" hidden>
+ <div class="card"><h2 id="ph"></h2><p>Ao avançar, a etapa atual é <b>encerrada para todos</b> (envios novos são recusados).</p><button onclick="act('back')" id="bk">← Voltar etapa</button><button class="p" onclick="act('advance')" id="ad">Liberar próxima etapa →</button><button onclick="if(confirm('Apagar participantes e murais e voltar à Etapa 1?'))act('reset')">Reiniciar sessão</button></div>
+ <div class="card"><h3>Participantes: <span id="n"></span></h3><p id="nicks"></p><p id="cn"></p></div>
+ <div class="card"><h2>Painel ao vivo</h2><p>Murais, ranking e resultados <b>em tempo real</b>, inclusive antes de a etapa abrir para os alunos. Por padrão acompanha a etapa atual.</p><div id="tabs"></div><div id="live"></div></div>
+</div></main>
+<script src="/engine.js"></script>
+<script>
+const PH=['Entrada','Aplicar','Mural (resultados de Aplicar)','Analisar (minijogo Filtro Misterioso)','Ranking de Analisar','Avaliar','Mural (resultados de Avaliar)','Criar','Mural (resultados de Criar)'],$=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const TABS=[['apply','Aplicar'],['rank','Analisar · Ranking'],['quiz','Avaliar'],['create','Criar']],tabFor=p=>p<=2?'apply':p<=4?'rank':p<=6?'quiz':'create';
+let key=sessionStorage.getItem('pdi_admin')||'',auto=1,cur='apply',sig='',cn=0,PAINT=[];const IM=new Map();
+const call=(u,m)=>fetch(u,{method:m||'GET',headers:{'x-admin-key':key}}).then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.erro);return j});
+const img=async p=>{if(IM.has(p))return IM.get(p);const i=E.fromB64((await call('/api/img/'+p)).d);IM.set(p,i);return i};
+const cv=(im,w)=>{const id='c'+cn++;PAINT.push([id,im]);return `<canvas id="${id}" width="${im.w}" height="${im.h}" style="width:${w}px" role="img" aria-label="Imagem"></canvas>`};
+const paint=()=>PAINT.splice(0).forEach(([id,im])=>{const c=document.getElementById(id);if(!c)return;const x=c.getContext('2d'),d=x.createImageData(im.w,im.h);for(let i=0;i<im.d.length;i++){const v=Math.max(0,Math.min(255,im.d[i]));d.data.set([v,v,v,255],i*4)}x.putImageData(d,0,0)});
+const pickTab=t=>{auto=0;cur=t;sig='';return refresh()},follow=()=>{auto=1;sig='';return refresh()};
+async function live(s){const tab=auto?tabFor(s.phase):cur;
+ $('#tabs').innerHTML=TABS.map(([k,n])=>`<button class="${k==tab?'p':''}" aria-pressed="${k==tab}" onclick="pickTab('${k}')">${n}${tabFor(s.phase)==k?' (agora)':''}</button>`).join('')+`<button ${auto?'disabled':''} onclick="follow()">Seguir etapa atual</button>`;
+ const data=await call(tab=='apply'||tab=='create'?'/api/wall/'+tab:tab=='rank'?'/api/ranking':'/api/quiz/stats'),sg=tab+JSON.stringify(data);if(sg===sig)return;sig=sg; // só redesenha se algo mudou
+ let h;
+ if(tab=='apply'||tab=='create'){await Promise.all([...new Set(data.map(e=>e.pid))].map(img));const seen=new Set(),L=data.filter(e=>!seen.has(e.pid)&&seen.add(e.pid)); // uma por aluno: a mais recente
+  h=L.length?'<div class="row">'+L.map(e=>{const o=IM.get(e.pid),r=tab=='create'?E.run(o,e.blocks).out:E.apply(o,e.chain);return `<div class="card"><b>${esc(e.nick)}</b><br>${cv(r,150)}${tab=='create'?`<details><summary>Pseudocódigo</summary><pre>${esc(e.pseudo)}</pre></details>`:''}</div>`}).join('')+'</div>':'<p>Nenhuma publicação ainda.</p>'}
+ else if(tab=='rank')h=data.length?`<table class="rk"><tr><th>#</th><th>Apelido</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Erros</th></tr>${data.map((x,i)=>`<tr><td>${['🥇','🥈','🥉'][i]||i+1}</td><td>${esc(x.nick)}</td><td>${x.score}</td><td>${x.solved}/3</td><td>${x.secs}s</td><td>${x.wrong}</td></tr>`).join('')}</table>`:'<p>Ninguém entrou ainda.</p>';
+ else h=data.total?`<p>${data.total} submissão(ões) (anônimas).</p>`+[4,3,2,1,0].map(k=>{const p=Math.round(100*data.dist[k]/data.total);return `<div>${p}% acertaram ${k} questão(ões) <div class="bar" style="width:${p}%"></div></div>`}).join(''):'<p>Nenhuma resposta ainda.</p>';
+ $('#live').innerHTML=h;paint()}
+async function refresh(){try{const s=await call('/api/admin/status');$('#login').hidden=true;$('#panel').hidden=false;$('#ph').textContent=`Etapa ${s.phase+1} de ${s.last+1}: ${PH[s.phase]}`;$('#bk').disabled=s.phase==0;$('#ad').disabled=s.phase==s.last;$('#n').textContent=s.nicks.length;$('#nicks').textContent=s.nicks.join(', ')||'ninguém ainda';const c=s.counts;$('#cn').textContent=`Envios — Aplicar: ${c.apply} · Analisar: ${c.game} · Avaliar: ${c.quiz} · Criar: ${c.create}`;await live(s)}catch(e){$('#msg').textContent='⚠ '+e.message}}
+function enter(){key=$('#k').value;sessionStorage.setItem('pdi_admin',key);refresh()}
+async function act(a){try{await call('/api/admin/'+a,'POST');sig='';refresh()}catch(e){alert(e.message)}}
+if(key)refresh();setInterval(()=>{if(key)refresh()},2500);
+</script></html>

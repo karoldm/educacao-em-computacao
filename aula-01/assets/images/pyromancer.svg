@@ -1,0 +1,13 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgPyro" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#5c2c1c"/>
+      <stop offset="100%" stop-color="#241210"/>
+    </radialGradient>
+  </defs>
+  <circle cx="100" cy="100" r="94" fill="url(#bgPyro)" stroke="#e4703a" stroke-width="3"/>
+  <path d="M70 168 L100 66 L130 168 Z" fill="#4a3f80" stroke="#e4703a" stroke-width="2"/>
+  <circle cx="100" cy="60" r="22" fill="#e7cd9a"/>
+  <path d="M100 130 C88 118 88 104 100 90 C112 104 112 118 100 130 Z" fill="#f0a03c"/>
+  <path d="M100 122 C94 114 94 106 100 98 C106 106 106 114 100 122 Z" fill="#ffe08a"/>
+</svg>

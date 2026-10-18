@@ -1,0 +1,20 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgHerald" cx="50%" cy="38%" r="68%">
+      <stop offset="0%" stop-color="#2e2440"/>
+      <stop offset="100%" stop-color="#110c1c"/>
+    </radialGradient>
+    <linearGradient id="robeHerald" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#332947"/>
+      <stop offset="100%" stop-color="#170f26"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="94" fill="url(#bgHerald)" stroke="#8467e6" stroke-width="3"/>
+  <path d="M100 44 L142 100 L128 172 L72 172 L58 100 Z" fill="url(#robeHerald)" stroke="#4a3a68" stroke-width="2.5"/>
+  <path d="M74 88 L64 60 L92 78 Z" fill="#241a38"/>
+  <path d="M126 88 L136 60 L108 78 Z" fill="#241a38"/>
+  <ellipse cx="100" cy="98" rx="22" ry="26" fill="#0d0916"/>
+  <circle cx="91" cy="96" r="5" fill="#c94f34"/>
+  <circle cx="109" cy="96" r="5" fill="#c94f34"/>
+  <path d="M80 150 Q100 160 120 150" fill="none" stroke="#4a3a68" stroke-width="3"/>
+</svg>

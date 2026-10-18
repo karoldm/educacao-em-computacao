@@ -1,0 +1,41 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgKnight" cx="50%" cy="38%" r="68%">
+      <stop offset="0%" stop-color="#3f3f58"/>
+      <stop offset="100%" stop-color="#191924"/>
+    </radialGradient>
+    <linearGradient id="plateKnight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d3d5e0"/>
+      <stop offset="100%" stop-color="#8f92a2"/>
+    </linearGradient>
+    <linearGradient id="shieldKnight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e7c467"/>
+      <stop offset="100%" stop-color="#a5792a"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="100" cy="100" r="94" fill="url(#bgKnight)" stroke="#d8a53d" stroke-width="3"/>
+
+  <path d="M62 180 C58 130 74 108 100 108 C126 108 142 130 138 180 Z" fill="url(#plateKnight)" stroke="#5c5c68" stroke-width="2.5"/>
+  <path d="M90 120 L110 120 L113 180 L87 180 Z" fill="#6c6c78" opacity="0.4"/>
+  <path d="M100 112 L108 138 L100 132 L92 138 Z" fill="#a5792a"/>
+
+  <circle cx="52" cy="118" r="14" fill="#c6c8d4" stroke="#5c5c68" stroke-width="2"/>
+  <circle cx="148" cy="118" r="14" fill="#c6c8d4" stroke="#5c5c68" stroke-width="2"/>
+
+  <path d="M76 52 C76 34 88 24 100 24 C112 24 124 34 124 52 L124 76 C124 90 112 100 100 100 C88 100 76 90 76 76 Z" fill="url(#plateKnight)" stroke="#5c5c68" stroke-width="2.5"/>
+  <rect x="86" y="60" width="28" height="10" rx="2" fill="#191924"/>
+  <path d="M100 20 L96 6 L104 6 Z" fill="#8a3a2a"/>
+  <path d="M100 8 Q108 -4 116 8 Q108 2 100 8 Z" fill="#c94f34"/>
+
+  <g transform="translate(-4 0)">
+    <path d="M40 100 L40 148 Q40 168 60 176 Q80 168 80 148 L80 100 Q60 92 40 100 Z" fill="url(#shieldKnight)" stroke="#5c4415" stroke-width="2.5"/>
+    <path d="M60 108 L68 128 L60 148 L52 128 Z" fill="#5c4415"/>
+  </g>
+
+  <g transform="rotate(14 150 100)">
+    <rect x="146" y="34" width="9" height="90" rx="3" fill="#e6e8f0" stroke="#8b8fa0" stroke-width="1.5"/>
+    <rect x="139" y="118" width="23" height="9" rx="2" fill="#a5792a"/>
+    <rect x="146" y="126" width="9" height="22" rx="2" fill="#4a3a20"/>
+  </g>
+</svg>
