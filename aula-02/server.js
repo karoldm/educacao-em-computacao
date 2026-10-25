@@ -88,7 +88,7 @@ function createServer(o = {}) {
     const send = (c, o, t = 'application/json') => { res.writeHead(c, { 'Content-Type': t }); res.end(typeof o === 'string' || Buffer.isBuffer(o) ? o : JSON.stringify(o)); };
     const [url, qs] = req.url.split('?'), h = req.headers['x-admin-key'];
     try {
-      if (req.method === 'GET' && FILES[url]) { if (!fs.existsSync(path.join(__dirname, FILES[url]))) throw bad('Arquivo ausente', 404); return send(200, fs.readFileSync(path.join(__dirname, FILES[url])), TYPES[path.extname(FILES[url])]); }
+      if (req.method === 'GET' && FILES[url]) { if (!fs.existsSync(path.join(__dirname, FILES[url]))) throw bad('Arquivo ausente no servidor: ' + FILES[url] + ' (procurado em ' + path.join(__dirname, FILES[url]) + ')', 404); return send(200, fs.readFileSync(path.join(__dirname, FILES[url])), TYPES[path.extname(FILES[url])]); }
       if (req.method === 'GET') return send(200, get(url, new URLSearchParams(qs || ''), h));
       const adminPost = { '/api/admin/advance': () => { if (phase < LAST) phase++; return { phase }; }, '/api/admin/back': () => { if (phase > 0) phase--; return { phase }; }, '/api/admin/reset': () => { reset(); return { phase }; } }[url];
       if (req.method === 'POST' && (post[url] || adminPost)) {
@@ -102,4 +102,4 @@ function createServer(o = {}) {
   return server;
 }
 module.exports = { createServer };
-if (require.main === module) { const port = process.env.PORT || 3000, s = createServer(); s.listen(port, () => console.log(`Alunos: http://localhost:${port}\nAdmin:  http://localhost:${port}/admin   (chave: ${s.adminKey})`)); }
+if (require.main === module) { const miss = Object.values(FILES).filter(f => !fs.existsSync(path.join(__dirname, f))); if (miss.length) console.warn('ATENÇÃO: arquivos ausentes (verifique o commit/deploy): ' + miss.join(', ')); const port = process.env.PORT || 3000, s = createServer(); s.listen(port, () => console.log(`Alunos: http://localhost:${port}\nAdmin:  http://localhost:${port}/admin   (chave: ${s.adminKey})`)); }

@@ -132,7 +132,31 @@ def g_edge_wipe():
     for t in list(np.linspace(0, 1, 14)) + list(np.linspace(1, 0, 14))[1:]: fr.append(W(t)); du.append(110 if 0 < t < 1 else 800)
     return save(fr, du, 'contorno_foto.gif')
 
-G = dict(zoom=g_zoom(), matriz=g_matrix(), cinza=g_gray(), receita=g_recipe(), regras=g_rules(), usos=g_uses(), passo=g_edge_scan(), foto=g_edge_wipe())
+def g_blur_scan():
+    fr, du = [], []; c = 34; out = np.zeros((7, 10), int)
+    for y in range(1, 8):
+        for x in range(1, 11): out[y - 1, x - 1] = int(round(P12[y - 1:y + 2, x - 1:x + 2].sum() / 9))
+    n = 0
+    for y in range(1, 8):
+        for x in range(1, 11):
+            im, d = canvas(800, 440); d.text((20, 12), 'Entrada (12×9)', font=F(18, True), fill=INK); d.text((440, 12), 'Saída: suavizada', font=F(18, True), fill=INK)
+            grid(d, P12, 20, 44, c, F(10, True)); d.rectangle([20 + (x - 1) * c, 44 + (y - 1) * c, 20 + (x + 2) * c, 44 + (y + 2) * c], outline=AMB, width=4)
+            grid(d, out, 440, 44 + c, c, F(10, True), blank_from=n + 1); d.rectangle([440 + (n % 10) * c, 44 + c + (n // 10) * c, 440 + (n % 10 + 1) * c, 44 + c + (n // 10 + 1) * c], outline=AMB, width=4)
+            v = P12[y - 1:y + 2, x - 1:x + 2].flatten(); t = int(v.sum())
+            d.text((400, 384), '(' + '+'.join(str(int(k)) for k in v) + ') / 9', font=FM(19), fill=INK, anchor='mm')
+            d.text((400, 416), f'= {t} / 9 = {out[y-1, x-1]}  (média dos 9 pixels)', font=FM(19), fill=AC, anchor='mm'); fr.append(im); du.append(110); n += 1
+    du[-1] = 1800; return save(fr, du, 'suavizar_passo.gif')
+def g_blur_wipe():
+    w, h = 440, 330; pad = np.pad(S, 1, mode='edge'); B = np.round(sum(pad[1 + dy:1 + dy + 72, 1 + dx:1 + dx + 96] for dy in (-1, 0, 1) for dx in (-1, 0, 1)) / 9)
+    up = lambda a: np.array(Image.fromarray(np.clip(a, 0, 255).astype('uint8')).resize((w, h), Image.NEAREST)).astype(float)
+    W = wipe_panel(up(S), up(B), w, h); fr, du = [], []
+    for t in list(np.linspace(0, 1, 14)) + list(np.linspace(1, 0, 14))[1:]:
+        im = W(t); d = ImageDraw.Draw(im)
+        for tx, xx, an in (('antes', 8, 'lm'), ('depois: média 3×3', w - 8, 'rm')): d.rectangle([xx - (0 if an == 'lm' else 190), h - 30, xx + (80 if an == 'lm' else 0), h - 4], fill=INK); d.text((xx, h - 17), tx, font=F(16, True), fill='white', anchor=an)
+        fr.append(im); du.append(110 if 0 < t < 1 else 800)
+    return save(fr, du, 'suavizar_foto.gif')
+
+G = dict(zoom=g_zoom(), matriz=g_matrix(), cinza=g_gray(), receita=g_recipe(), regras=g_rules(), usos=g_uses(), passo=g_edge_scan(), foto=g_edge_wipe(), passo2=g_blur_scan(), foto2=g_blur_wipe())
 
 prs = Presentation(); prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
 rgbc = lambda t: RGBColor(*t)
@@ -160,4 +184,6 @@ for i, (n, t) in enumerate([('Aplicar', 'experimente filtros e publique'), ('Ana
 tb(s, 'O professor libera cada etapa. Quando ele avança, o tempo da etapa termina — aproveite bem!', .6, 5.2, 12, 1, 22, True)
 s = slide('Explore outros filtros: contornar', HINT + 'Extra: detecção de bordas. A cada pixel, compara os vizinhos: onde há grande diferença, há um contorno. Cada filtro usa a vizinhança.'); pic(s, G['passo'], .4, 1.4, 7.6, 4.3); pic(s, G['foto'], 8.2, 1.4, 4.8, 4.3)
 tb(s, ['Filtros de contorno comparam cada pixel com seus vizinhos: onde a diferença é grande, há uma borda (as veias das folhas).', 'Na etapa Criar você vai usar os blocos Borda e Suavizar. Desafio: que outros filtros você consegue imaginar? Nitidez, contraste, inverter só as bordas...'], .5, 5.8, 12.3, 1.5, 19)
+s = slide('Explore outros filtros: suavizar', HINT + 'Extra: suavização (desfoque). A mesma janela 3×3 do filtro de contorno, mas a conta é outra: a média dos 9 pixels. Diferenças bruscas diminuem: some ruído, mas também detalhes. Na etapa Criar os alunos podem combinar Suavizar e Borda.'); pic(s, G['passo2'], .4, 1.4, 7.6, 4.3); pic(s, G['foto2'], 8.2, 1.4, 4.8, 4.3)
+tb(s, ['Suavizar troca cada pixel pela média dele e dos 8 vizinhos: as diferenças bruscas diminuem (o ruído some, mas os detalhes também).', 'Compare com contornar: mesma janela 3×3, outra conta. Na etapa Criar, o que muda se você suavizar antes de achar as bordas?'], .5, 5.8, 12.3, 1.5, 19)
 prs.save('slides/aula_pdi.pptx'); print('ok', len(prs.slides._sldIdLst), 'slides')
