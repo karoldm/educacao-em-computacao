@@ -3,7 +3,7 @@ const vm = require('vm'), fs = require('fs'), assert = require('node:assert/stri
 t('interface: telas renderizam e seguem as regras de layout, feedbacks individuais e recursos', async () => {
   const html = fs.readFileSync(__dirname + '/../public/index.html', 'utf8'), ui = html.match(/<script>\n([\s\S]*?)<\/script>/)[1], eng = fs.readFileSync(__dirname + '/../public/engine.js', 'utf8');
   const el = () => ({ innerHTML: '', textContent: '', disabled: false, style: {}, getContext: () => ({ createImageData: () => ({ data: { set() {} } }), putImageData() {}, strokeRect() {} }) });
-  const DATA = u => /\/api\/quiz$/.test(u) ? [{ goal: 'g', a: ['x'], b: ['y'], c: ['z'] }]
+  const DATA = u => /\/api\/quiz\?token=/.test(u) ? [{ goal: 'g', a: ['x'], b: ['y'], c: ['z'] }]
     : /\/api\/quiz\/feedback/.test(u) ? { score: 1, answered: true, items: [{ goal: 'g', a: ['x'], b: ['y'], c: ['z'], mine: 'a', correct: 'b', ok: false, why: 'porque sim' }] }
     : /\/api\/game/.test(u) ? { round: 3, total: 3, done: true, score: 150, rounds: [{ pts: 100, secs: 5, wrong: 1, solved: 1 }, { pts: 50, secs: 20, wrong: 2, solved: 1 }], reveal: [['inverter'], ['clarear', 'inverter'], ['pb', 'pb', 'pb']] } : null;
   const ctx = vm.createContext({ document: { querySelector: el, getElementById: el, createElement: el }, localStorage: { getItem: () => null, setItem() {}, removeItem() {} }, sessionStorage: { getItem: () => null, setItem() {} }, location: { search: '', pathname: '/' }, history: { replaceState() {} },
@@ -28,4 +28,23 @@ t('interface: telas renderizam e seguem as regras de layout, feedbacks individua
   assert.match(out.fbq, /Etapa 7 · Feedback/); assert.match(out.fbq, /Você acertou <b>1<\/b> de 1/); assert.match(out.fbq, /sua resposta/); assert.match(out.fbq, /✔ correta/); assert.match(out.fbq, /porque sim/);
   assert.match(out.nb1, /disabled/); assert.match(out.nb1, /Publique pelo menos um resultado/); assert.ok(!/disabled/.test(out.nb2)); assert.match(out.nb2, /Continuar →/); assert.match(out.nb8, /Fim da aula/); assert.equal(out.nb0, ''); // botão Continuar por etapa
   assert.ok(!html.includes('O professor liberou')); assert.ok(!/host|x-admin-key|hostBar|liberou|liberada/i.test(html)); assert.ok(!html.includes('stats')); assert.ok(html.includes("['a','b','c']"));
+});
+
+t('interface contra o servidor real: Avaliar e os feedbacks carregam com o token', async () => {
+  const E = require('../public/engine.js'), srv = require('../server.js').createServer(); await new Promise(r => srv.listen(0, r)); const base = 'http://localhost:' + srv.address().port;
+  const P = (p, b) => fetch(base + p, { method: 'POST', body: JSON.stringify(b) }).then(r => r.json());
+  const rgb = Buffer.from(Uint8Array.from({ length: E.W * E.H * 3 }, (_, i) => ((i / 3 | 0) * 7) % 256)).toString('base64');
+  const { token } = await P('/api/join', { nick: 'Ana', rgb }); await P('/api/apply', { token, chain: ['inverter'] });
+  for (const n of [1, 1]) await P('/api/next', { token }); // 1 → 2 → 3
+  for (let i = 0; i < 3; i++) await P('/api/game/skip', { token });
+  await P('/api/next', { token }); await P('/api/next', { token }); // 4 → 5 (Avaliar)
+  const html = fs.readFileSync(__dirname + '/../public/index.html', 'utf8'), ui = html.match(/<script>\n([\s\S]*?)<\/script>/)[1], eng = fs.readFileSync(__dirname + '/../public/engine.js', 'utf8');
+  const el = () => ({ innerHTML: '', textContent: '', disabled: false, style: {}, getContext: () => ({ createImageData: () => ({ data: { set() {} } }), putImageData() {}, strokeRect() {} }) });
+  const ctx = vm.createContext({ document: { querySelector: el, getElementById: el, createElement: el }, localStorage: { getItem: () => null, setItem() {}, removeItem() {} }, sessionStorage: { getItem: () => null, setItem() {} }, location: { search: '', pathname: '/' }, history: { replaceState() {} },
+    fetch: (u, o) => fetch(base + u, o), setInterval() {}, atob, btoa, URLSearchParams, console, Uint8Array, Int32Array, confirm: () => true });
+  vm.runInContext(eng, ctx); vm.runInContext(ui, ctx);
+  const out = await vm.runInContext(`(async()=>{tok='${token}';await sync();const R={stage:phase};R.av=await avaliar();ans=['b','c','a','b'];await sendQuiz();R.after=phase;R.can=can;await next();R.after2=phase;R.fbq=await fbQuiz();phase=4;R.fbg=await fbGame();return R})()`, ctx);
+  assert.equal(out.stage, 5); assert.equal(out.av.split('type="radio"').length - 1, 12); assert.ok(!/Entre com um apelido/.test(out.av)); // 4 perguntas × 3 opções, sem erro de token
+  assert.equal(out.after, 5); assert.equal(out.can, true); assert.equal(out.after2, 6); assert.match(out.fbq, /Etapa 7 · Feedback/); assert.match(out.fbq, /Você acertou <b>4<\/b> de 4/); assert.match(out.fbg, /Etapa 5 · Feedback/); assert.ok(!/Entre com um apelido/.test(out.fbq + out.fbg));
+  srv.close();
 });
