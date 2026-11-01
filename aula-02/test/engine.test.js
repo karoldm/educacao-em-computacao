@@ -59,62 +59,76 @@ t('suavizar: média 3x3, limites, ruído e ordem dos blocos', () => {
 t('pseudocódigo de cadeia de filtros prontos', () => { const c = E.chainPseudo(['clarear', 'inverter']); assert.equal((c.match(/PARA CADA/g) || []).length, 1); assert.ok(c.indexOf('p + 40') < c.indexOf('255 - p')); });
 t('servidor: páginas são HTML/CSS/JS de verdade', async () => {
   const s = createServer({ adminKey: 'k' }); await new Promise(r => s.listen(0, r)); const u = 'http://localhost:' + s.address().port;
-  for (const [p, re] of [['/', /^<!doctype html>/i], ['/admin', /^<!doctype html>/i], ['/engine.js', /^\/\/ Motor/], ['/style.css', /^:root/]]) assert.match(await (await fetch(u + p)).text(), re);
+  for (const [p, re] of [['/', /^<!doctype html>/i], ['/engine.js', /^\/\/ Motor/], ['/style.css', /^:root/]]) assert.match(await (await fetch(u + p)).text(), re);
   s.close();
 });
-t('servidor: upload P&B, etapas do admin, minijogo, ranking, murais, quiz anônimo, reinício', async () => {
-  const s = createServer({ adminKey: 'k' }); await new Promise(r => s.listen(0, r)); const u = 'http://localhost:' + s.address().port;
-  const P = (p, b, h) => fetch(u + p, { method: 'POST', body: JSON.stringify(b), headers: h }).then(async r => ({ s: r.status, ...(await r.json()) }));
-  const G = (p, h) => fetch(u + p, { headers: h }).then(async r => ({ s: r.status, j: await r.json() })), A = { 'x-admin-key': 'k' }, adv = () => P('/api/admin/advance', {}, A);
-  // entrada: apelido + imagem
+t('servidor: cada aluno avança no próprio ritmo; feedbacks individuais; murais; sem controle de etapas', async () => {
+  const s = createServer(); await new Promise(r => s.listen(0, r)); const u = 'http://localhost:' + s.address().port;
+  const P = (p, b) => fetch(u + p, { method: 'POST', body: JSON.stringify(b) }).then(async r => ({ s: r.status, ...(await r.json()) }));
+  const G = p => fetch(u + p).then(async r => ({ s: r.status, j: await r.json() })), nx = tk => P('/api/next', { token: tk }), st = async tk => (await G('/api/state?token=' + tk)).j;
+  for (const r of ['/admin', '/api/admin/status', '/api/ranking', '/api/quiz/stats']) assert.equal((await G(r)).s, 404); // sem painel, sem ranking de turma
+  assert.equal((await P('/api/admin/advance', {})).s, 404); // ninguém libera etapas
+  assert.deepEqual(await st('x'), { stage: 0, nick: null, pid: null, can: false, total: 0 });
   assert.equal((await P('/api/join', { nick: '  ', rgb: b64(grayRgb) })).s, 400);
-  assert.equal((await P('/api/join', { nick: 'Ana', rgb: b64(grayRgb.slice(0, 100)) })).s, 400); // tamanho errado
-  assert.equal((await P('/api/join', { nick: 'Ana' })).s, 400); // sem imagem
+  assert.equal((await P('/api/join', { nick: 'Ana', rgb: b64(grayRgb.slice(0, 100)) })).s, 400);
+  assert.equal((await P('/api/join', { nick: 'Ana' })).s, 400);
   const ja = await P('/api/join', { nick: 'Ana', rgb: b64(grayRgb) }), ana = ja.token; assert.equal(ja.s, 200);
   assert.equal((await P('/api/join', { nick: 'ana', rgb: b64(grayRgb) })).s, 409);
   const colorRgb = mk(i => [i % 256, (i * 5) % 256, (i * 11) % 256]), jb = await P('/api/join', { nick: 'Bia', rgb: b64(colorRgb) }), bia = jb.token; assert.equal(jb.s, 200); // colorida: aceita e convertida
   assert.ok(E.same(E.fromB64((await G('/api/img/' + jb.pid + '?token=' + bia)).j.d), E.grayFromRgb(colorRgb)));
-  // admin enxerga murais, ranking, resultados e imagens em qualquer etapa; aluno continua bloqueado
-  for (const r of ['/api/wall/apply', '/api/wall/create', '/api/ranking', '/api/quiz/stats', '/api/img/' + ja.pid]) { assert.equal((await G(r, A)).s, 200, r); assert.equal((await G(r + (r.includes('img') ? '?token=' + bia : ''))).s, 403, r); }
-  assert.equal((await G('/api/ranking', { 'x-admin-key': 'errada' })).s, 403);
-  assert.equal((await G('/api/img/' + ja.pid + '?token=' + ana)).s, 200); // a sua sempre
-  assert.equal((await G('/api/img/' + ja.pid + '?token=' + bia)).s, 403); // a dos outros só nos murais
-  assert.equal((await P('/api/apply', { token: ana, chain: ['inverter'] })).s, 409); // etapa fechada
-  assert.equal((await P('/api/admin/advance', {})).s, 403);
-  await adv(); assert.equal((await P('/api/apply', { token: ana, chain: ['inverter'] })).s, 200); // 1 Aplicar
-  assert.equal((await G('/api/wall/apply')).s, 403); await adv(); // 2 Mural
-  assert.equal((await P('/api/apply', { token: ana, chain: ['inverter'] })).s, 409);
-  const w = (await G('/api/wall/apply')).j; assert.equal(w[0].nick, 'Ana'); assert.ok(!('note' in w[0]));
-  assert.equal((await G('/api/img/' + ja.pid + '?token=' + bia)).s, 200);
-  assert.equal((await G('/api/game?token=' + ana)).s, 403); await adv(); // 3 Filtro Misterioso
-  // rodada 1 (1 filtro): palpite errado, depois certo
+  assert.equal((await st(ana)).stage, 1); assert.equal((await st(ana)).can, false);
+  assert.equal((await G('/api/img/' + ja.pid + '?token=' + bia)).s, 403); // a imagem dos outros só a partir do mural
+  assert.equal((await G('/api/wall/apply?token=' + ana)).s, 403); assert.equal((await G('/api/wall/apply')).s, 401); // sem token não vê
+  assert.equal((await nx(ana)).s, 409); // precisa publicar antes de continuar
+  assert.equal((await P('/api/apply', { token: ana, chain: ['nada'] })).s, 400);
+  assert.equal((await P('/api/apply', { token: ana, chain: ['inverter'] })).s, 200); assert.equal((await st(ana)).can, true);
+  assert.equal((await nx(ana)).stage, 2); assert.equal((await st(bia)).stage, 1); // Ana adiantou, Bia segue na etapa 1 (individual)
+  assert.equal((await P('/api/apply', { token: ana, chain: ['inverter'] })).s, 409); // Ana já saiu de Aplicar
+  const w = (await G('/api/wall/apply?token=' + ana)).j; assert.equal(w.length, 1); assert.equal(w[0].nick, 'Ana'); assert.ok(!('note' in w[0]));
+  assert.equal((await G('/api/wall/apply?token=' + bia)).s, 403); assert.equal((await G('/api/img/' + ja.pid + '?token=' + bia)).s, 403);
+  assert.equal((await G('/api/img/' + jb.pid + '?token=' + ana)).s, 200); // Ana já vê o mural, então vê as imagens
+  await P('/api/apply', { token: bia, chain: ['pb'] }); await nx(bia); assert.equal((await G('/api/wall/apply?token=' + ana)).j.length, 2); // o mural é compartilhado e ao vivo
+  assert.equal((await G('/api/game?token=' + ana)).s, 403); assert.equal((await nx(ana)).stage, 3); // Analisar (minijogo)
+  assert.equal((await nx(ana)).s, 409); // precisa terminar as 3 rodadas
   let g = (await G('/api/game?token=' + ana)).j; assert.equal(g.round, 0); assert.equal(g.len, 1); assert.equal(g.reveal, null);
   const tg = E.fromB64(g.target), right = E.equivalents(img, tg, 1)[0], wrong = Object.keys(E.F).find(n => !E.same(E.apply(img, [n]), tg));
   const w1 = await P('/api/game/guess', { token: ana, chain: [wrong] }); assert.equal(w1.ok, false); assert.ok(w1.match >= 0 && w1.match < 1);
-  const r1 = await P('/api/game/guess', { token: ana, chain: right }); assert.ok(r1.ok && r1.pts <= 90 && r1.pts >= 20); // 100 − 10 do erro (− tempo)
-  // rodada 2 (2 filtros): tamanho errado é recusado; depois certo
+  const r1 = await P('/api/game/guess', { token: ana, chain: right }); assert.ok(r1.ok && r1.pts <= 90 && r1.pts >= 20);
   g = (await G('/api/game?token=' + ana)).j; assert.equal(g.round, 1); assert.equal(g.len, 2); assert.equal(g.rounds.length, 1);
   assert.equal((await P('/api/game/guess', { token: ana, chain: ['inverter'] })).s, 400);
   const r2 = await P('/api/game/guess', { token: ana, chain: E.equivalents(img, E.fromB64(g.target), 2)[0] }); assert.ok(r2.ok && r2.pts > 20);
-  // rodada 3: pular
-  assert.ok((await P('/api/game/skip', { token: ana })).ok); g = (await G('/api/game?token=' + ana)).j; assert.ok(g.done); assert.equal(g.target, null); assert.equal(g.score, r1.pts + r2.pts);
-  assert.equal((await P('/api/game/guess', { token: ana, chain: ['inverter'] })).s, 409);
-  assert.equal((await G('/api/ranking')).s, 403); await adv(); // 4 Ranking
-  const rk = (await G('/api/ranking')).j; assert.equal(rk[0].nick, 'Ana'); assert.equal(rk[0].score, r1.pts + r2.pts); assert.equal(rk[1].score, 0); assert.equal(rk[0].solved, 2);
-  assert.equal((await P('/api/game/guess', { token: ana, chain: ['inverter'] })).s, 409); // tempo encerrado
-  g = (await G('/api/game?token=' + ana)).j; assert.equal(g.reveal.length, 3);
-  await adv(); // 5 Avaliar
-  assert.equal((await P('/api/quiz', { token: ana, answers: ['b', 'c', 'a', 'b'] })).score, 4);
-  assert.equal((await P('/api/quiz', { token: bia, answers: ['a', 'a', 'a', 'x'] })).s, 400); // opção inválida
-  const qs = (await G('/api/quiz')).j; assert.ok(qs.every(q => q.a && q.b && q.c)); assert.ok(!qs.some(q => 'ok' in q)); // 3 opções, sem gabarito
-  assert.equal((await G('/api/quiz/stats')).s, 403); await adv(); // 6
-  const st = (await G('/api/quiz/stats')).j; assert.equal(st.dist[4], 1); assert.ok(!JSON.stringify(st).includes('Ana'));
-  await adv(); // 7 Criar
+  assert.ok((await P('/api/game/skip', { token: ana })).ok); g = (await G('/api/game?token=' + ana)).j; assert.ok(g.done); assert.equal(g.target, null); assert.equal(g.score, r1.pts + r2.pts); assert.equal(g.reveal, null);
+  assert.equal((await nx(ana)).stage, 4); assert.equal((await P('/api/game/guess', { token: ana, chain: ['inverter'] })).s, 409); // saiu do minijogo
+  g = (await G('/api/game?token=' + ana)).j; assert.equal(g.reveal.length, 3); // feedback individual: solução liberada
+  assert.equal((await G('/api/game?token=' + bia)).s, 403); await nx(bia); // Bia (etapa 2) ainda não chegou a Analisar; depois chega
+  const gb = (await G('/api/game?token=' + bia)).j; assert.equal(gb.score, 0); assert.equal(gb.reveal, null); assert.ok(!JSON.stringify(gb).includes('Ana')); // cada um vê só o seu
+  assert.equal((await nx(ana)).stage, 5); // Avaliar
+  const qs = (await G('/api/quiz?token=' + ana)).j; assert.ok(qs.every(q => q.a && q.b && q.c)); assert.ok(!qs.some(q => 'ok' in q));
+  assert.equal((await G('/api/quiz?token=' + bia)).s, 403); assert.equal((await nx(ana)).s, 409); // precisa responder antes
+  assert.equal((await P('/api/quiz', { token: ana, answers: ['a', 'a', 'a', 'x'] })).s, 400); // opção inválida
+  const pq = await P('/api/quiz', { token: ana, answers: ['b', 'c', 'a', 'b'] }); assert.equal(pq.ok, true); assert.ok(!('score' in pq) && !('items' in pq)); // sem feedback na hora
+  assert.equal((await P('/api/quiz', { token: ana, answers: ['b', 'c', 'a', 'b'] })).s, 409); assert.equal((await G('/api/quiz/feedback?token=' + ana)).s, 403);
+  assert.equal((await nx(ana)).stage, 6); const fa = (await G('/api/quiz/feedback?token=' + ana)).j;
+  assert.equal(fa.score, 4); assert.equal(fa.items[0].mine, 'b'); assert.equal(fa.items[0].correct, 'b'); assert.ok(fa.items[0].why && fa.items[0].a);
+  for (let i = 0; i < 3; i++) await P('/api/game/skip', { token: bia }); await nx(bia); await nx(bia); // Bia: termina o jogo, vê o feedback, chega a Avaliar
+  await P('/api/quiz', { token: bia, answers: ['a', 'a', 'b', 'a'] }); await nx(bia);
+  const fb = (await G('/api/quiz/feedback?token=' + bia)).j; assert.equal(fb.score, 0); assert.equal(fb.answered, true); assert.equal(fb.items[0].mine, 'a'); assert.ok(!JSON.stringify(fb).includes('Ana')); // individual
+  assert.equal((await G('/api/quiz/feedback')).s, 401);
+  assert.equal((await nx(ana)).stage, 7); assert.equal((await nx(ana)).s, 409); // Criar: precisa publicar
   assert.equal((await P('/api/create', { token: ana, blocks: [{ t: 'thr', x: 999 }] })).s, 400);
   assert.equal((await P('/api/create', { token: ana, blocks: [{ t: 'thr', x: 100 }] })).invalid, 0);
   const ce = await P('/api/create', { token: ana, blocks: [{ t: 'edge' }] }); assert.equal(ce.invalid, 0); assert.match(ce.pseudo, /\|D - E\|/); // bloco de borda aceito
   const cb = await P('/api/create', { token: ana, blocks: [{ t: 'blur' }, { t: 'edge' }] }); assert.equal(cb.invalid, 0); assert.match(cb.pseudo, /soma \/ 9/); // bloco de suavizar aceito
-  assert.equal((await G('/api/admin/status', A)).j.counts.create, 3);
-  await P('/api/admin/reset', {}, A); const z = (await G('/api/state?token=' + ana)).j; assert.equal(z.phase, 0); assert.equal(z.nick, null);
+  assert.equal((await G('/api/wall/create?token=' + ana)).s, 403); assert.equal((await nx(ana)).stage, 8); // Mural final
+  assert.equal((await G('/api/wall/create?token=' + ana)).j.length, 3); assert.equal((await nx(ana)).s, 409); assert.equal((await st(ana)).can, false); // fim
   s.close();
+  const s2 = createServer(); await new Promise(r => s2.listen(0, r)); // reiniciar o servidor apaga tudo
+  assert.equal((await (await fetch('http://localhost:' + s2.address().port + '/api/state?token=' + ana)).json()).nick, null); s2.close();
+});
+t('exporta handler (req, res) para a Vercel, com estado compartilhado entre requisições', async () => {
+  const handler = require('../server.js'); assert.equal(typeof handler, 'function'); assert.equal(typeof handler.createServer, 'function');
+  const s = require('node:http').createServer(handler); await new Promise(r => s.listen(0, r)); const u = 'http://localhost:' + s.address().port;
+  assert.match(await (await fetch(u + '/')).text(), /^<!doctype html>/i);
+  const j = await (await fetch(u + '/api/join', { method: 'POST', body: JSON.stringify({ nick: 'Zé', rgb: b64(grayRgb) }) })).json();
+  assert.equal((await (await fetch(u + '/api/state?token=' + j.token)).json()).nick, 'Zé'); s.close();
 });

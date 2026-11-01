@@ -1,31 +1,33 @@
 # Laboratório de Filtros (PDI)
-Plataforma em **etapas liberadas pelo professor (admin)**, com visual pixel art:
-Entrada → **Aplicar** → Mural → **Analisar** (minijogo Filtro Misterioso) → Ranking → **Avaliar** → Mural → **Criar** → Mural. (Aplicar, Analisar, Avaliar e Criar são os níveis da taxonomia de Bloom usados.)
-Sem dependências no servidor (Node 18+).
+Plataforma em etapas, com visual pixel art: Entrada → **Aplicar** → Mural → **Analisar** (minijogo Filtro Misterioso) → Feedback → **Avaliar** → Feedback → **Criar** → Mural.
+Aplicar, Analisar, Avaliar e Criar são os níveis da taxonomia de Bloom usados. Sem dependências no servidor (Node 18+).
 
 ## Rodar
-- `npm start` → alunos em http://localhost:3000 · professor em http://localhost:3000/admin
-- A **chave de admin** aparece no terminal ao iniciar (ou defina `ADMIN_KEY=suachave npm start`; em hospedagem use a variável de ambiente `ADMIN_KEY`).
-- `npm test` → 16 testes (filtros, DSL e bloco de borda, conversão para P&B, etapas, minijogo, ranking, murais, quiz, reinício, fumaça da interface e painel do admin).
-- Slides: `slides/aula_pdi.pptx` (também em `/aula.pptx`). Abra no PowerPoint em **modo apresentação (F5)**: as simulações são GIFs animados.
+- `npm start` → http://localhost:3000. `npm test` → 16 testes.
+- Slides: `slides/aula_pdi.pptx` (modo apresentação, F5, para as animações).
 
-## Sala
-1. **Entrada:** apelido único + upload de **qualquer imagem** (colorida ou não). O navegador recorta em 4:3, reduz para 96×72 e a converte para preto e branco por luminância (cinza = 0,299·R + 0,587·G + 0,114·B); o servidor refaz a conversão a partir do RGB enviado. A prévia mostra original e resultado. Imagens que já são P&B ficam iguais.
-2. Cada aluno trabalha na **própria imagem** em Aplicar, no minijogo e em Criar. As imagens dos outros só aparecem nos murais.
-3. **Aplicar:** imagem original e resultado lado a lado; abaixo, filtros e pseudocódigo; por último o seletor de pixels (lupa 8×8, **só nesta etapa**). O mural mostra apenas o nome e a imagem resultado de cada aluno.
-4. **Analisar (Filtro Misterioso):** mostra também o pseudocódigo da sequência testada. 3 rodadas (1, 2 e 3 filtros sorteados sobre a imagem do aluno). Pontos: base 100/150/200, −10 por palpite errado, −1 a cada 3 s (mínimo 20% da base); pular vale 0. Tempo e pontos são do servidor; o tempo de cada rodada começa quando ela abre. Vale o resultado igual ao alvo (sequências equivalentes contam). O **ranking** abre na etapa seguinte, com a solução de cada rodada.
-5. **Avaliar:** 4 perguntas com 3 opções cada; o gabarito fica só no servidor.
-6. **Criar:** blocos de filtro, incluindo **Borda** (`p = |D − E| + |B − C|`, máx. 255) e **Suavizar** (cada pixel vira a média, arredondada, dele e dos 8 vizinhos). Fora da imagem vale o pixel mais próximo. O pseudocódigo é gerado, e blocos de vizinhança abrem um trecho próprio da receita.
-7. **Painel do admin ao vivo:** em `/admin`, além de avançar etapas, o professor vê em tempo real o mural de Aplicar, o ranking do Analisar, os resultados de Avaliar e o mural de Criar (com pseudocódigo), em abas que por padrão seguem a etapa atual. O admin enxerga tudo **mesmo antes** de a etapa abrir para os alunos; as rotas dos alunos continuam bloqueadas por etapa.
-8. Etapas só avançam no painel do admin. Ao avançar, a etapa anterior **encerra para todos** (envios novos são recusados). O mural de Avaliar é agregado e anônimo.
+## Ritmo da aula
+Ninguém libera etapas: **cada aluno avança no próprio ritmo**. Ao concluir uma etapa, o botão **Continuar →** é habilitado (a etapa seguinte só abre para quem clicou). Não há painel de admin nem chave.
+- **Aplicar:** publicar pelo menos um resultado.
+- **Analisar:** terminar as 3 rodadas (acertando ou pulando).
+- **Avaliar:** enviar as respostas.
+- **Criar:** publicar pelo menos um filtro.
+- Mural e Feedback são livres para continuar. Ao seguir adiante não se volta atrás (envios da etapa anterior são recusados).
+O servidor aplica essas regras: um aluno só age na etapa em que está e só vê o que já alcançou (murais, imagens dos outros e gabaritos).
+
+## Etapas
+1. **Entrada:** apelido único + upload de **qualquer imagem** (recortada em 4:3, reduzida a 96×72 e convertida para P&B por luminância). Aviso de que os demais alunos verão a imagem nos murais e feedbacks.
+2. **Aplicar:** original e resultado, filtros e pseudocódigo, e a lupa de pixels (só aqui). **Mural:** nome + imagem resultado de cada aluno que já publicou (compartilhado e ao vivo, visível a quem já chegou nele).
+3. **Analisar (Filtro Misterioso):** 3 rodadas; pontos e tempo calculados no servidor (base 100/150/200, −10 por erro, −1 a cada 3 s, mínimo 20%). **Feedback individual:** só o seu desempenho e os filtros misteriosos da sua imagem, com pseudocódigo. Não há ranking da turma.
+4. **Avaliar:** 4 perguntas com 3 opções + recurso de consulta (livro, Cap. 2 (2.3.1), p. 50). O gabarito só aparece no **feedback individual** seguinte.
+5. **Criar:** blocos (incl. **Borda** e **Suavizar**) com pseudocódigo + curiosidade sobre os novos filtros (livro, Cap. 4, p. 103). **Mural** final.
 
 ## Arquitetura
-`public/engine.js` (filtros, DSL de blocos e checagem P&B, no navegador e no servidor) · `server.js` (API + estado) · `public/index.html` (alunos) · `public/admin.html` · `public/style.css` · `tools/build_slides.py` (regenera os slides; precisa de pillow, numpy, python-pptx; usa `assets/folhas.png`).
+`public/engine.js` (filtros, blocos, conversão P&B) · `server.js` (API + estado em memória; exporta também um handler para a Vercel) · `public/index.html` · `public/style.css` · `tools/build_slides.py` (regenera os slides; pillow, numpy, python-pptx; usa `assets/folhas.png`).
 
-## Estado em memória
-Etapa, participantes, imagens, jogo e murais ficam só na memória do processo. **Reiniciar o servidor (ou "Reiniciar sessão" no admin) apaga tudo.** Em hospedagem gratuita que "dorme", o estado também some.
+## Deploy
+- **Render (recomendado):** Root Directory = pasta do projeto, Start `npm start`. Não precisa de variáveis de ambiente. O estado em memória some quando o serviço dorme ou reinicia.
+- **Vercel:** sobe, mas é serverless: o estado em memória pode se perder quando a instância muda (alunos "somem"). Para uso confiável é preciso um banco externo (ex.: Upstash Redis). Se aparecer "Arquivo ausente no servidor: ...", o texto diz qual arquivo faltou no deploy.
 
 ## Limitações
-- A chave de admin é uma proteção simples (sem login real).
-- Arrastar e soltar não foi implementado (tudo por clique). Sem bloco condicional genérico em Criar.
-- A interface não foi testada por mim em navegador real (só o servidor e o motor têm testes automáticos).
+Estado só em memória (reiniciar apaga tudo); sem login; arrastar e soltar não implementado; interface não testada por mim em navegador real (há testes de servidor, motor e um teste de fumaça da interface).
