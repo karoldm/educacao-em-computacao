@@ -1,1 +1,1 @@
-{"name":"pdi-lab","version":"1.0.0","private":true,"scripts":{"start":"node server.js","test":"node --test test/*.test.js"}}
+{"name":"laboratorio-de-filtros","version":"2.0.0","private":true,"description":"Site estático (sem servidor). Abra public/index.html ou publique a pasta public.","scripts":{"test":"node --test test/*.test.js"}}
