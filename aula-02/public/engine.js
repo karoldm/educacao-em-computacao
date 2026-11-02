@@ -36,7 +36,7 @@
     // pseudocódigo dos filtros de vizinhança (o mesmo nos filtros prontos e nos blocos)
     edge: [
       "PARA CADA pixel p (vizinhos: C, B, E, D):",
-      "    soma = (C * peso_C) + (B * peso_B) + (E * peso_E) + (D * peso_D) + (p * peso_centro)",
+      "    soma = (p * 4) - E - D - C - B",
       "    valor = ABSOLUTO(soma)",
       "    SE valor > 255 ENTÃO:",
       "        valor = 255",
@@ -90,7 +90,7 @@
     borda: {
       nome: "Borda (contornos)",
       op: edge,
-      exp: "Compara cada pixel com os vizinhos (esquerda/direita e cima/baixo): onde a diferença é grande há um contorno e o pixel fica claro; áreas lisas ficam pretas (0). O resultado é limitado a 255. Margens e cantos: se E, D, C ou B cair fora da imagem (ex.: o primeiro pixel não tem esquerda nem cima), usa-se o próprio pixel no lugar dele.",
+      exp: "Nessa operação, regiões uniformes resultam em zero (ficando pretas), enquanto zonas de transição brusca de tom geram diferenças acentuadas. Compara cada pixel com os vizinhos (esquerda/direita e cima/baixo): onde a diferença é grande há um contorno e o pixel fica claro. O resultado é limitado a 255. A operação é realizada (nesse caso) usando o filtro Laplaciano:  [[0, -1, 0], [-1, 4, -1], [0, -1, 0]]",
       pc: PCN.edge,
     },
     pb: {
