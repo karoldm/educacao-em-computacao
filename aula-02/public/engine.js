@@ -37,11 +37,9 @@
     edge: [
       "PARA CADA pixel p (vizinhos: C, B, E, D):",
       "    soma = (p * 4) - E - D - C - B",
-      "    valor = ABSOLUTO(soma)",
-      "    SE valor > 255 ENTÃO:",
-      "        valor = 255",
-      "    FIM SE",
-      "    p = valor",
+      "    p = ABSOLUTO(soma)",
+      "    SE p > 255 ENTÃO:",
+      "        p = 255",
     ],
 
     blur: [
