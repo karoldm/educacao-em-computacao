@@ -16,20 +16,20 @@ t('interface: percorre todas as etapas sem servidor, com feedbacks individuais e
   assert.match(m(), /Etapa 1 · Entrada/); assert.match(m(), /type="file"/); assert.match(m(), /qualquer imagem/); assert.match(m(), /convertida para preto e branco/); assert.ok(!/apelido|compartilh|demais alunos|Mural/i.test(m())); assert.match(m(), /<button id="jb" class="p" disabled/);
   b.run("up={ok:true,img:E.grayFromRgb(new Uint8Array(E.W*E.H*3).map((_,i)=>((i/3|0)*7)%256)),src:'x',msg:'ok'};begin()");
   // Etapa 2: Aplicar (lupa só aqui)
-  ok(); assert.match(m(), /Etapa 2 · Aplicar/); assert.equal(n(m(), 'Lupa'), 1); assert.equal(n(m(), 'class="g2"'), 2); assert.ok(m().indexOf('Original') < m().indexOf('Pseudocódigo') && m().indexOf('Pseudocódigo') < m().indexOf('Lupa')); assert.ok(blocked(m())); assert.match(m(), /Aplique pelo menos um filtro/); assert.ok(!/Publicar|observou/i.test(m()));
+  ok(); assert.match(m(), /Etapa 2 · Aplicar/); assert.match(m(), /\+ Suavizar \(média 3×3\)/); assert.match(m(), /\+ Borda \(contornos\)/); assert.ok(!/casos de borda/.test(m())); assert.equal(n(m(), 'Lupa'), 1); assert.equal(n(m(), 'class="g2"'), 2); assert.ok(m().indexOf('Original') < m().indexOf('Pseudocódigo') && m().indexOf('Pseudocódigo') < m().indexOf('Lupa')); assert.ok(blocked(m())); assert.match(m(), /Aplique pelo menos um filtro/); assert.ok(!/Publicar|observou/i.test(m()));
   b.run("add('clarear',6)"); assert.match(m(), /p = p \+ 40/); assert.ok(enabled(m())); b.run('next()');
   // Etapa 3: Analisar (minijogo), com pseudocódigo e sem lupa
   ok(); assert.match(m(), /Etapa 3 · Analisar/); assert.match(m(), /Pseudocódigo do seu teste/); assert.ok(!m().includes('Lupa')); assert.ok(blocked(m()));
-  for (const r of [0, 1, 2]) { b.run(`chain=S.mys[${r}].slice();guess()`); ok(); if (r < 2) { assert.match(m(), /Acertou/); assert.match(m(), /PARA CADA pixel p:/); b.run('nextRound()'); } }
+  for (const r of [0, 1, 2]) { b.run(`chain=Game.ROUNDS[${r}].chain.slice();guess()`); ok(); if (r < 2) { assert.match(m(), /Acertou/); assert.match(m(), /PARA CADA pixel p/); if (r === 0) assert.match(m(), /\(vizinho fora da imagem/); b.run('nextRound()'); } }
   assert.match(m(), /Fim de jogo/); assert.ok(enabled(m())); b.run('next()');
   // Etapa 4: Feedback individual
   ok(); assert.match(m(), /Etapa 4 · Feedback/); assert.match(m(), /Seu desempenho/); assert.match(m(), /Os filtros misteriosos da sua imagem eram/); assert.ok(!/Apelido/.test(m())); b.run('next()');
   // Etapa 5: Avaliar, com recurso; sem gabarito
-  ok(); assert.match(m(), /Etapa 5 · Avaliar/); assert.equal(n(m(), 'type="radio"'), 12); assert.match(m(), /Cap\. 2 \(2\.3\.1\), página 50/); assert.ok(m().includes(BOOK)); assert.ok(!/✔ correta/.test(m())); assert.ok(blocked(m()));
-  b.run("ans=['b','c','a',undefined];sendQuiz()"); assert.match(m(), /Etapa 5 · Avaliar/); // faltou uma resposta: não envia
-  b.run("ans=['b','c','a','b'];sendQuiz()"); assert.match(m(), /Enviado ✓/); assert.ok(enabled(m())); b.run('next()');
+  ok(); assert.match(m(), /Etapa 5 · Avaliar/); assert.equal(n(m(), 'type="radio"'), 21); assert.match(m(), /Cap\. 2 \(2\.3\.1\), página 50/); assert.ok(m().includes(BOOK)); assert.ok(!/✔ correta/.test(m())); assert.ok(blocked(m()));
+  b.run("ans=['b','c','a','b','c','a',undefined];sendQuiz()"); assert.match(m(), /Etapa 5 · Avaliar/); // faltou uma resposta: não envia
+  b.run("ans=['b','c','a','b','c','a','b'];sendQuiz()"); assert.match(m(), /Enviado ✓/); assert.ok(enabled(m())); b.run('next()');
   // Etapa 6: Feedback individual do Avaliar
-  ok(); assert.match(m(), /Etapa 6 · Feedback/); assert.match(m(), /Você acertou <b>4<\/b> de 4/); assert.match(m(), /✔ correta/); b.run('next()');
+  ok(); assert.match(m(), /Etapa 6 · Feedback/); assert.match(m(), /Você acertou <b>7<\/b> de 7/); assert.match(m(), /✔ correta/); b.run('next()');
   // Etapa 7: Criar, com Borda, Suavizar e curiosidade; sem lupa
   ok(); assert.match(m(), /Etapa 7 · Criar/); assert.match(m(), /BORDA/); assert.match(m(), /SUAVIZAR/); assert.match(m(), /Curiosidade sobre os novos filtros/); assert.match(m(), /Cap\. 4, página 103/); assert.ok(m().includes(BOOK)); assert.ok(!m().includes('Lupa')); assert.ok(blocked(m()));
   b.run("blocks=[{t:'blur'},{t:'edge'}];runB()"); assert.match(m(), /soma \/ 9/); assert.match(m(), /\|D - E\|/); assert.ok(enabled(m()));
@@ -44,10 +44,28 @@ t('interface: percorre todas as etapas sem servidor, com feedbacks individuais e
 });
 t('interface: recarregar no meio do minijogo mantém rodada, pontos e tempo', () => {
   const b = boot(); b.run("up={ok:true,img:E.grayFromRgb(new Uint8Array(E.W*E.H*3).map((_,i)=>((i/3|0)*5)%256)),src:'x',msg:'ok'};begin();add('inverter',6);next()");
-  b.run("chain=S.mys[0].slice();guess();nextRound()"); const t0 = b.run('S.game.t0'), score = b.run('Game.gview(S,Date.now()).score');
+  b.run("chain=Game.ROUNDS[0].chain.slice();guess();nextRound()"); const t0 = b.run('S.game.t0'), score = b.run('Game.gview(S,Date.now()).score');
   const b2 = boot(b.storage); assert.match(b2.main(), /RODADA 2\/3/); assert.equal(b2.run('S.game.t0'), t0); assert.equal(b2.run('Game.gview(S,Date.now()).score'), score); assert.ok(score >= 20);
 });
 t('interface: sem imagem não há como começar, e o site não cita apelido, murais nem servidor', () => {
   const html = P('index.html'); assert.ok(html.includes('Laboratório de Filtros')); assert.ok(!/apelido|nick|Mural|Ranking|\/api\/|host=|liberou|liberada/i.test(html));
   const b = boot(); assert.throws(() => b.run('begin()')); assert.match(b.main(), /Etapa 1 · Entrada/);
+});
+
+t('interface: Suavizar e Borda em Aplicar, Analisar e Criar, com o cartão dos cantos e margens', () => {
+  const b = boot(), m = b.main; b.run("up={ok:true,img:E.grayFromRgb(new Uint8Array(E.W*E.H*3).map((_,i)=>((i/3|0)*11+((i/3|0)%96)*5)%256)),src:'x',msg:'ok'};begin()");
+  const e0 = b.run("E.run(me(),[{t:'edge'}]).out.d[0]"), b0 = b.run("E.run(me(),[{t:'blur'}]).out.d[0]"), w = JSON.parse(b.run("JSON.stringify(E.window3(me(),0,0))"));
+  assert.ok(!/casos de borda/.test(m())); // sem os filtros, sem o cartão
+  b.run("add('borda',6)"); assert.match(m(), /casos de borda/); assert.match(m(), /primeiro pixel/); assert.match(m(), /não tem vizinho <b>acima<\/b> nem <b>à esquerda<\/b>/); assert.match(m(), /pixel mais próximo que existe dentro da imagem/);
+  assert.match(m(), /\(vizinho fora da imagem: use o próprio p/); assert.match(m(), new RegExp('= ' + e0 + '</p>')); assert.ok(!/Suavizar:<\/b> soma/.test(m())); assert.equal(n(m(), 'class="bad"'), 5); // 5 células tracejadas = cópias
+  assert.match(m(), new RegExp('E = ' + w[1][0] + ' \\(cópia\\)')); assert.ok(m().indexOf('casos de borda') < m().indexOf('Lupa')); // a lupa segue por último
+  b.run("add('suavizar',6)"); assert.match(m(), /Suavizar:<\/b> soma dos 9 valores/); assert.match(m(), new RegExp('/ 9 = ' + b0 + '</p>')); assert.match(m(), /Borda:<\/b>/);
+  b.run('next()'); assert.match(m(), /Analisar/); assert.ok(!/casos de borda/.test(m())); b.run("chain=['suavizar'];render()"); assert.match(m(), /casos de borda/); assert.ok(!m().includes('Lupa')); assert.match(m(), /\+ Borda \(contornos\)/);
+  assert.match(m(), /pode(m)? incluir Suavizar e Borda/); assert.match(m(), /mesmo para a turma toda/);
+  b.run("S.stage=6;chain=[];render()"); assert.ok(!/casos de borda/.test(m())); b.run("blocks=[{t:'edge'}];render()"); assert.match(m(), /casos de borda/); assert.ok(!m().includes('Lupa'));
+  b.run("blocks=[{t:'inv'}];render()"); assert.ok(!/casos de borda/.test(m()));
+});
+t('interface: progresso salvo por uma versão antiga é descartado', () => {
+  const st = new Map([['pdi_state', JSON.stringify({ v: 1, stage: 5, img: 'x', quizAns: ['a', 'b', 'c', 'a'] })]]), b = boot(st);
+  assert.match(b.main(), /Etapa 1 · Entrada/); assert.match(b.main(), /type="file"/);
 });

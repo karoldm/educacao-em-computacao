@@ -57,3 +57,26 @@ t('suavizar: média 3x3, limites, ruído e ordem dos blocos', () => {
   const p = E.pseudo([{ t: 'add', x: 5 }, { t: 'blur' }, { t: 'inv' }]); assert.ok(p.indexOf('p + 5') < p.indexOf('soma / 9') && p.indexOf('soma / 9') < p.indexOf('255 - p')); assert.equal((p.match(/PARA CADA pixel p/g) || []).length, 3);
 });
 t('pseudocódigo de cadeia de filtros prontos', () => { const c = E.chainPseudo(['clarear', 'inverter']); assert.equal((c.match(/PARA CADA/g) || []).length, 1); assert.ok(c.indexOf('p + 40') < c.indexOf('255 - p')); });
+
+t('filtros prontos Suavizar e Borda: iguais aos blocos, com pseudocódigo próprio', () => {
+  assert.ok(E.same(E.apply(img, ['suavizar']), E.run(img, [{ t: 'blur' }]).out)); assert.ok(E.same(E.apply(img, ['borda']), E.run(img, [{ t: 'edge' }]).out));
+  assert.ok(E.same(E.apply(img, ['suavizar', 'inverter', 'borda']), E.run(img, [{ t: 'blur' }, { t: 'inv' }, { t: 'edge' }]).out)); // a ordem é respeitada
+  assert.ok(Object.keys(E.F).includes('suavizar') && Object.keys(E.F).includes('borda')); assert.match(E.F.suavizar.nome, /Suavizar/); assert.match(E.F.borda.nome, /Borda/);
+  assert.ok(E.same(E.apply(img, ['inverter', 'suavizar']), E.apply(img, ['suavizar', 'inverter']))); // suavizar e inverter comutam (média não tem empates)
+  assert.ok(!E.same(E.apply(img, ['suavizar', 'borda']), E.apply(img, ['borda', 'suavizar'])));
+  const c = E.chainPseudo(['clarear', 'suavizar', 'inverter', 'borda']); assert.equal((c.match(/PARA CADA pixel p/g) || []).length, 4); assert.ok(c.indexOf('p + 40') < c.indexOf('soma / 9') && c.indexOf('soma / 9') < c.indexOf('255 - p') && c.indexOf('255 - p') < c.indexOf('|D - E|'));
+  assert.equal(E.chainPseudo(['escurecer', 'inverter']).split('\n').filter(l => /PARA CADA/.test(l)).length, 1); // filtros por pixel continuam agrupados
+});
+t('casos de margem: o primeiro pixel (sem vizinhos acima e à esquerda) usa o pixel mais próximo dentro da imagem', () => {
+  const m = { w: 3, h: 3, d: Int32Array.of(10, 20, 30, 40, 50, 60, 70, 80, 90) };
+  assert.deepEqual(E.window3(m, 0, 0), [[10, 10, 20], [10, 10, 20], [40, 40, 50]]); // canto superior esquerdo: linha e coluna de fora são cópias
+  assert.deepEqual(E.window3(m, 2, 2), [[50, 60, 60], [80, 90, 90], [80, 90, 90]]); // canto inferior direito
+  assert.deepEqual(E.window3(m, 1, 1), [[10, 20, 30], [40, 50, 60], [70, 80, 90]]); // miolo: nada é copiado
+  assert.equal(E.run(m, [{ t: 'edge' }]).out.d[0], 40); // |D − E| + |B − C| = |20 − 10| + |40 − 10|, com E = C = o próprio 10
+  assert.equal(E.run(m, [{ t: 'blur' }]).out.d[0], 23); // (10+10+20+10+10+20+40+40+50) / 9 = 210 / 9
+  assert.equal(E.run(m, [{ t: 'edge' }]).out.d[8], 40); assert.equal(E.run(m, [{ t: 'blur' }]).out.d[8], 77); // último pixel: 690 / 9
+  const e = E.run(img, [{ t: 'edge' }]).out, b = E.run(img, [{ t: 'blur' }]).out; // a janela mostrada na tela é a mesma que o filtro usa, em TODOS os pixels
+  for (let y = 0; y < img.h; y++) for (let x = 0; x < img.w; x++) { const w = E.window3(img, x, y), i = y * img.w + x; assert.equal(b.d[i], Math.round(w.flat().reduce((a, v) => a + v, 0) / 9)); assert.equal(e.d[i], Math.min(255, Math.abs(w[1][2] - w[1][0]) + Math.abs(w[2][1] - w[0][1]))); }
+  for (const p of [E.F.borda.pc.join('\n'), E.F.suavizar.pc.join('\n'), E.pseudo([{ t: 'edge' }]), E.pseudo([{ t: 'blur' }])]) assert.match(p, /\(vizinho fora da imagem/); // o pseudocódigo diz como as margens são tratadas
+  assert.match(E.F.borda.exp, /primeiro pixel/); assert.match(E.F.suavizar.exp, /primeiro pixel/);
+});
