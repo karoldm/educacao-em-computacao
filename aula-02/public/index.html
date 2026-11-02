@@ -330,7 +330,7 @@
       return (
         head +
         hud(v) +
-        `<p>Um filtro misterioso transformou a <b>sua imagem</b> na imagem-alvo. Descubra a sequência de filtros. Cada erro custa 10 pontos e o tempo também desconta. Montar e visualizar é de graça: só o envio vale!</p><div class="row"><div class="card"><h3>Original</h3>${cv(o, 240)}</div><div class="card"><h3>Alvo</h3>${cv(v.target, 240)}</div><div class="card"><h3>Seu teste</h3>${cv(r, 240)}</div></div><div class="g2"><div class="card">${chainHTML(v.len)}<p><button class="p" ${chain.length != v.len ? "disabled" : ""} onclick="guess()">Enviar palpite</button> <button onclick="skip()">Pular rodada (0 pts)</button> <span id="msg" role="status"></span></p></div><div class="card"><h3>Pseudocódigo do seu teste</h3><pre>${chain.length ? esc(E.chainPseudo(chain)) : "(vazio)"}</pre></div></div>${marginCard(o, chain.includes("borda"), chain.includes("suavizar"))}` +
+        `<p>Um filtro misterioso transformou a <b>sua imagem</b> na imagem-alvo. Descubra a sequência de filtros. Cada erro custa 10 pontos e o tempo também desconta. Montar e visualizar é de graça: só o envio vale!</p><div class="row"><div class="card"><h3>Original</h3>${cv(o, 240)}</div><div class="card"><h3>Alvo</h3>${cv(v.target, 240)}</div><div class="card"><h3>Seu teste</h3>${cv(r, 240)}</div></div><div class="g2"><div class="card">${chainHTML(v.len)}<p><button class="p" ${chain.length != v.len ? "disabled" : ""} onclick="guess()">Enviar palpite</button> <button onclick="skip()">Pular rodada (0 pts)</button> <span id="msg" role="status"></span></p></div><div class="card"><h3>Pseudocódigo do seu teste</h3><pre>${chain.length ? esc(E.chainPseudo(chain)) : "(vazio)"}</pre></div></div>` +
         (gfb && !gfb.ok
           ? `<div class="card"><p class="err">✘ Ainda não! Seu resultado é ${Math.round(gfb.match * 100)}% parecido com o alvo.</p><div class="bar" style="width:${Math.round(gfb.match * 100)}%"></div></div>`
           : "")
@@ -466,17 +466,13 @@
       const o = me(),
         m = /Bloco (\d+)/.exec(err || "");
       return (
-        `<h2>Etapa 7 · Criar</h2><p>Monte seu filtro com blocos e execute-o na sua imagem. Novos: <b>Borda</b> compara cada pixel com seus vizinhos (E = esquerda, D = direita, C = cima, B = baixo): onde a diferença é grande, há um contorno. <b>Suavizar</b> troca cada pixel pela média dele e dos 8 vizinhos, o que borra a imagem e reduz ruído. Fora da imagem vale o pixel mais próximo (veja o cartão sobre os cantos e as margens quando usar Borda ou Suavizar).</p>${bookCard("Curiosidade sobre os novos filtros", "Quer saber mais sobre os filtros de Borda e Suavizar? Veja o Cap. 4, página 103.")}<div class="g2"><div class="card"><h3>Sua imagem</h3>${cv(o, "100%")}</div><div class="card"><h3>Resultado</h3>${res ? cv(res.out, "100%") : '<p>Monte os blocos e clique em "Executar filtro".</p>'}</div></div><div class="g2"><div class="card"><h3>Blocos</h3>${Object.keys(
+        `<h2>Etapa 7 · Criar</h2><p>Monte seu filtro com blocos e execute-o na sua imagem.</p><div class="g2"><div class="card"><h3>Sua imagem</h3>${cv(o, "100%")}</div><div class="card"><h3>Resultado</h3>${res ? cv(res.out, "100%") : '<p>Monte os blocos e clique em "Executar filtro".</p>'}</div></div><div class="g2"><div class="card"><h3>Blocos</h3>${Object.keys(
           BL,
         )
           .map((t) => `<button onclick="addB('${t}')">+ ${BL[t]}</button>`)
           .join(
             "",
-          )}<ol>${blocks.map((b, i) => `<li ${m && +m[1] == i + 1 ? 'class="bad"' : ""}>${BL[b.t]}${b.x !== undefined ? ` X=<input type="number" style="width:5em" value="${b.x}" onchange="blocks[${i}].x=this.valueAsNumber;rc()">` : ""} <button aria-label="Subir" onclick="mvB(${i},-1)">↑</button><button aria-label="Descer" onclick="mvB(${i},1)">↓</button><button aria-label="Duplicar" onclick="dupB(${i})">⧉</button><button aria-label="Remover" onclick="rmB(${i})">✕</button></li>`).join("")}</ol><button class="p" onclick="runB()">Executar filtro</button></div><div class="card"><h3>Pseudocódigo gerado</h3><pre>${blocks.length ? esc(E.pseudo(blocks)) : "(vazio)"}</pre></div></div>${marginCard(
-          o,
-          blocks.some((b) => b.t == "edge"),
-          blocks.some((b) => b.t == "blur"),
-        )}` +
+          )}<ol>${blocks.map((b, i) => `<li ${m && +m[1] == i + 1 ? 'class="bad"' : ""}>${BL[b.t]}${b.x !== undefined ? ` X=<input type="number" style="width:5em" value="${b.x}" onchange="blocks[${i}].x=this.valueAsNumber;rc()">` : ""} <button aria-label="Subir" onclick="mvB(${i},-1)">↑</button><button aria-label="Descer" onclick="mvB(${i},1)">↓</button><button aria-label="Duplicar" onclick="dupB(${i})">⧉</button><button aria-label="Remover" onclick="rmB(${i})">✕</button></li>`).join("")}</ol><button class="p" onclick="runB()">Executar filtro</button></div><div class="card"><h3>Pseudocódigo gerado</h3><pre>${blocks.length ? esc(E.pseudo(blocks)) : "(vazio)"}</pre></div></div>` +
         (err ? `<p class="err">⚠ ${esc(err)}</p>` : "") +
         (res
           ? `<div class="card"><p>${res.invalid ? `<b class="err">${res.invalid} pixel(s) saíram de 0–255.</b> Sem blocos de limite o valor fica inválido; a tela só limita a cor. Tente "SE p > 255" ou "SE p < 0".` : "Todos os pixels ficaram entre 0 e 255."}</p></div>`
