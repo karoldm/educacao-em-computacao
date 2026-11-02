@@ -52,7 +52,7 @@
       min0: "SE p < 0, então p = 0",
       max255: "SE p > 255, então p = 255",
       thr: "SE p < X, então p = 0; SENÃO p = 255",
-      edge: "BORDA: p = |D − E| + |B − C| (máx. 255)",
+      edge: "BORDA: p = ABSOLUTO((p * 4) - E - D - C - B) (máx. 255)",
       blur: "SUAVIZAR: p = média de p e dos 8 vizinhos",
     };
     const BOOK =
