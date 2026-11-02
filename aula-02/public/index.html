@@ -386,10 +386,6 @@
         sent = !!S.quizAns;
       return (
         `<h2>Etapa 5 · Avaliar</h2>` +
-        bookCard(
-          "Recurso para consulta",
-          "Precisa relembrar? Consulte o Cap. 2 (2.3.1), página 50.",
-        ) +
         Q.map(
           (q, i) =>
             `<fieldset><legend>${i + 1}. Objetivo: ${esc(q.goal)}</legend>${["a", "b", "c"].map((o) => `<label><input type="radio" name="q${i}" value="${o}" ${sent ? "disabled" : ""} ${ans[i] == o ? "checked" : ""} onchange="ans[${i}]='${o}'"> <b>Regra ${o.toUpperCase()}</b><pre>${esc(q[o].join("\n"))}</pre></label>`).join("")}</fieldset>`,
